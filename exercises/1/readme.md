@@ -3,22 +3,54 @@
 ### Notes
 The original SQL code was translated to a SQLite dialect using https://www.jooq.org/translate/.
 
-### Todos
-* Read up on MXML model.
-* Transform database data -> integration model.
-* Transform spreadsheet data -> integration model.
-
-
-
-
-
 ## Tasks
 
-**1. Create a list of problems and assumptions when/for doing the integration. (2 points)**  
+Abbreviations used in the following:
+* ProcesscaseActivity: PCA.
+* Processcase: PC.
+
+**1. Create a list of problems and assumptions when/for doing the integration. (2 points)**
+
+Note that some of these assumptions are almost guaranteed to misrepresent the data (e. g. assuming date and times where 
+these are not available) but are considered useful in converging to a useful integrated data model in terms of stability 
+and comparability.
+
+##### Problems
+
+TODO
+
+##### Assumptions
+
+_General assumptions_:
 * Patients in spreadsheet and database are treated as different entities, since their cases don't obviously overlap and 
 hence we can't reasonably assume they are the same persons.
-* Data consistency w.r.t. to usage of parameters is guaranteed at runtime / when new data is entered.
-* Medications are considered complete instantaneously.
+* Data consistency w.r.t. to usage of parameters will be guaranteed at runtime / when new data is entered.
+* Examination (e. g. CT) and diagnosis are considered to be two different activities to allow modeling dependencies 
+between dependencies and multiple examinations (e. g. `Lokalisation Fernmetastasen` is derived from  MRI & CT 
+examinations) in the predetermined integration model.
+* `Primärexzision` is considered both an operation and an examination, since the `Localisation` property is derived from 
+it.
+* The patient-to-column structure in the spreadsheet precludes more than one ProcesscaseActivity of the same type and 
+the same name (i. e. an examination of type `Labor`) for one patient on one day occuring there - i. e. multiple values 
+in one cell are not permitted.
+
+_Assumptions w.r.t. date and time (followed from top to bottom)_:  
+* If a PCAs date is not known (e. g. in case of `KrankenhausaufenthaltLeistung` in database), we assume the date and 
+time of this patient's admission into the hospital as date for the corresponding PCA.
+* If a PCAs start time is not known (e. g. for `Therapiesitzung` in the spreadsheet), it 
+is assumed to be 00:00 on the corresponding day.
+* If a PCAs end time is not known (e. g. for `Medikation` in the database), it is considered to be the same as the end time. While this is guaranteed to be not 
+correct, since no action can take place instantaneously, it allows fitting the data into the supplied immutable data 
+structure while maintaining a property that can be exploited to locate records which where imported with those 
+attributes missing). 
+* Regarding operations contained in the spreadsheet: 
+  * The time span between `Erstuntersuchung` and `Histologische Primärexzision` to be one hospital stay. Other 
+  activities, such as `MRT Diagnose`, are considered to be check-ups that take place after the original hospital stay 
+  has been completed.
+  * All other date fields are assumed to reflect one operation each. Both operation and stay in the hospital are, in 
+  line with the assumptions made above to allow for identification and rectification of those insufficiently specified 
+  timeframes. 
+* Diagnoses are assumed to have been made at the same time as their latest related examination.
 
 **2. Integrate the data into the given data integration model from Figure 1. (4 points)**  
 

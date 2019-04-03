@@ -2,16 +2,28 @@ import re
 
 import pandas as pd
 import argparse
+from datetime import datetime
+
+
+def is_timestamp_valid(timestamp):
+    """
+    Checks whether argument is a valid pandas Timestamp.
+    :param timestamp:
+    :return:
+    """
+
+    return type(timestamp) == pd._libs.tslibs.timestamps.Timestamp
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", type=str)
     args = parser.parse_args()
-
     df = pd.read_excel(args.input, sheet_name=0)
+    sql = ""
 
     # Map fixed values for inserts.
-    values = {
+    fixed_values = {
         "Activity": [
             "operation", "hospital_stay", "medication", "examination", "diagnosis"
         ],
@@ -24,9 +36,11 @@ if __name__ == '__main__':
             ("patient_gender", 1)
         ],
         "ProcesscaseActivityParameters": [
+            ("operation_name", 1),
             ("medication_name", 1),
             ("medication_dosage", 0),
             ("operation_name", 1),
+            ("examination_name", 1),
             ("diagnosis_name", 1),
             ("diagosis_result", 1),
             # Note: depends_on_pca_id reflects dependency of this PCA on one other PCA.
@@ -34,34 +48,58 @@ if __name__ == '__main__':
         ]
     }
 
-    sql = ""
+    # Define mapping from diagnoses to necessary examinations.
+    diagnosis_to_examinations = {
+        "Lokalisation": ["Erstuntersuchung"],
+        "AJCC Stadium": ["Histologische Untersuchung"],
+        "MRT Diagnose": ["Magnetresonanztomographie"],
+        "CT Diagnose": ["Computertomographie"],
+        "Lokalisation Fernmetastasen": ["Magnetresonanztomographie", "Computertomographie"],
+        "Tumormarker LDH": ["Labor"],
+        "AJCC Stadium Therapie": ["Magnetresonanztomographie", "Computertomographie", "Labor"]
+    }
 
     # todo Format insert of PossibleValues. What's suposed to go in here?
     # sql += """
     #     insert into PossibleValue
     # """
 
+    #######################################################################
     # 1. Activities.
-    sql += "insert into Activity (name) values {activities}".format(
-        activities="('" + "'), ('".join(values["Activity"]) + "')"
+    #######################################################################
+
+    sql += "insert into Activity (name) values {activities};".format(
+        activities="('" + "'), ('".join(fixed_values["Activity"]) + "')"
     )
 
+    #######################################################################
     # 2. Parameters.
-    vals = values["ProcesscaseParameters"]
-    vals.extend(values["ProcesscaseActivityParameters"])
-    for val in values["ProcesscaseParameters"]:
-        sql += "\ninsert into Parameter (name, type) values ('{name}', {type})".format(name=val[0], type=val[1])
+    #######################################################################
 
+    vals = fixed_values["ProcesscaseParameters"]
+    vals.extend(fixed_values["ProcesscaseActivityParameters"])
+    for val in fixed_values["ProcesscaseParameters"]:
+        sql += "\ninsert into Parameter (name, type) values ('{name}', {type});".format(name=val[0], type=val[1])
+
+    #######################################################################
     # 3. Processcases.
-    sql += "\ninsert into Processcase (externalidentifier) select id from Patient"
-    sql += "\ninsert into Processcase (externalidentifier) values {vals}".format(
+    #######################################################################
+
+    sql += "\ninsert into Processcase (externalidentifier) select id from Patient;"
+    sql += "\ninsert into Processcase (externalidentifier) values {vals};".format(
         vals="('" + "'), ('".join(df.Patient.values.tolist()) + "')"
     )
 
+    #######################################################################
     # 4. ProcesscaseActivity.
-    # todo What's time precision?
+    #######################################################################
 
-    # 4. 1. Medications from DB.
+    # todo What's time precision? Add.
+
+    ###########################################
+    # 4. 1. (a) Medications from DB.
+    ###########################################
+
     sql += "\n" + """
         insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
             select 
@@ -72,9 +110,13 @@ if __name__ == '__main__':
                 a.name = 'medication'
             inner join Processcase p on
                 cast(p.externalidentifier as int) = m.patientId
+        ;
     """.replace("\n", " ").strip()
 
-    # 4. 2. Medications from spreadsheet.
+    ###########################################
+    # 4. 1. (b) Medications from spreadsheet.
+    ###########################################
+
     for patient_id in df[df.Therapie.notnull()].Patient.values:
         sql += "\n" + """
             insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
@@ -86,11 +128,190 @@ if __name__ == '__main__':
                     a.name = 'medication'
                 inner join Processcase p on
                     p.externalidentifier = '{patient_id}'
+            ;
         """.format(patient_id=patient_id).replace("\n", " ").strip()
 
-    # 4. 3. Operations
+    ###########################################
+    # 4. 2. (a) Hospital stays from database.
+    ###########################################
 
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', None):
-        print(df[df.Therapie.notnull()])
+    sql += "\n" + """
+        insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
+            select 
+                p.id, a.id, k.aufnahme, k.entlassung, 0
+            from KrankenhausaufenthaltLeistung kl
+            inner join Krankenhausaufenthalt k on
+                k.id = kl.krankenhausaufenthaltId
+            inner join Processcase p on 
+                cast(p.externalidentifier as int) = k.patientId
+            inner join Activity a on
+                a.name = "hospital_stay"
+        ;
+    """.replace("\n", " ").strip()
+
+    ###########################################
+    # 2. 2. (b) Hospital stays from spreadsheet.
+    ###########################################
+
+    for idx, patient in df.iterrows():
+        stays = [
+            (patient["Erstuntersuchung"], patient["Histologische Primärexzision"])
+        ]
+        stays.extend([
+            (patient[date_col], patient[date_col])
+            for date_col in [
+                "Nachexzision", "Histologische Nachexzision"
+            ] if is_timestamp_valid(patient[date_col])
+        ])
+
+        # Add therapy sessions, if they exist.
+        if type(patient["Therapiesitzungen"]) == str:
+            stays.extend([
+                (
+                    datetime.strptime(therapy_date, '%d.%m.%Y'),
+                    datetime.strptime(therapy_date, '%d.%m.%Y')
+                )
+                for therapy_date in patient["Therapiesitzungen"].split(", ")
+            ])
+
+        for stay in stays:
+            sql += "\n" + """
+                insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
+                    select 
+                        p.id, a.id, '{start}', '{end}', 0
+                    from Processcase p
+                    inner join Activity a on
+                        a.name = 'hospital_stay'
+                    where
+                        p.externalidentifier = '{patient_id}'
+                ;
+            """.format(start=str(stay[0]), end=str(stay[1]), patient_id=patient.Patient).replace("\n", " ").strip()
+
+    ###########################################
+    # 4. 3. (a) Operations from DB.
+    ###########################################
+
+    # Note: Only slightly adapted version from 4.3.
+    sql += "\n" + """
+        insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
+            select 
+                p.id, a.id, k.aufnahme, k.aufnahme, 0
+            from KrankenhausaufenthaltLeistung kl
+            inner join Krankenhausaufenthalt k on
+                k.id = kl.krankenhausaufenthaltId
+            inner join Processcase p on 
+                cast(p.externalidentifier as int) = k.patientId
+            inner join Activity a on
+                a.name = "operation"
+        ;
+    """.replace("\n", " ").strip()
+
+    ###########################################
+    # 4. 3. (b) Operations from spreadsheet.
+    ###########################################
+
+    # Note: Slightly modified version from 2.4.
+    for idx, patient in df.iterrows():
+        for operation_date in [
+            patient[date_col]
+            for date_col in [
+                "Histologische Primärexzision", "Nachexzision", "Histologische Nachexzision"
+            ] if is_timestamp_valid(patient[date_col])
+        ]:
+            sql += "\n" + """
+                insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
+                    select 
+                        p.id, a.id, '{start}', '{end}', 0
+                    from Processcase p
+                    inner join Activity a on
+                        a.name = 'operation'
+                    where
+                        p.externalidentifier = '{patient_id}'
+                ;
+            """.format(
+                start=str(operation_date), end=str(operation_date), patient_id=patient.Patient
+            ).replace("\n", " ").strip()
+
+    ###########################################
+    # 4. 4. Examinations from spreadsheet.
+    ###########################################
+
+    for idx, patient in df.iterrows():
+        for examination_date in [
+            patient[date_col]
+            for date_col in [
+                "Erstuntersuchung", "Primärexzision", "Histologische Untersuchung", "Magnetresonanztomographie",
+                "Computertomographie", "Labor"
+            ] if is_timestamp_valid(patient[date_col])
+        ]:
+            sql += "\n" + """
+                insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) 
+                    select 
+                        p.id, a.id, '{start}', '{end}', 0
+                    from Processcase p
+                    inner join Activity a on
+                        a.name = 'examination'
+                    where
+                        p.externalidentifier = '{patient_id}'
+                ;
+            """.format(
+                start=str(examination_date), end=str(examination_date), patient_id=patient.Patient
+            ).replace("\n", " ").strip()
+
+    ###########################################
+    # 4. 5. Diagnoses from spreadsheet.
+    ###########################################
+
+    for idx, patient in df.iterrows():
+        for examination_date in [
+            patient[date_col]
+            for date_col in [
+                "Lokalisation", "AJCC Stadium", "MRT Diagnose", "CT Diagnose", "Lokalisation Fernmetastasen",
+                "Tumormarker LDH", "AJCC Stadium Therapie"
+            ]
+        ]:
+            # todo get corresponding examination date column, check date
+            pass
+            # sql += "\n" + """
+            #     insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision)
+            #         select
+            #             p.id, a.id, '{start}', '{end}', 0
+            #         from Processcase p
+            #         inner join Activity a on
+            #             a.name = 'examination'
+            #         where
+            #             p.externalidentifier = '{patient_id}'
+            #     ;
+            # """.format(
+            #     start=str(operation_date), end=str(operation_date), patient_id=patient.Patient
+            # ).replace("\n", " ").strip()
+
+    #######################################################################
+    # 5. PPValue.
+    #######################################################################
+
+    # Note: Only record type in Processcase table are patients.
+
+    #######################################################################
+    # 6. PAPValue.
+    #######################################################################
+
+    ###########################################
+    # 6. 1. For operations.
+    ###########################################
+
+    ###########################################
+    # 6. 2. For medications.
+    ###########################################
+
+    ###########################################
+    # 6. 3. For examinations.
+    ###########################################
+
+    ###########################################
+    # 6. 4. For diagnoses.
+    ###########################################
+
+    # Include dependencies to multiple examinations!
 
     print(re.sub(r"( +)", " ", sql))
