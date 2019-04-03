@@ -312,6 +312,7 @@ if __name__ == '__main__':
     # 6. 4. For diagnoses.
     ###########################################
 
-    # Include dependencies to multiple examinations!
+    # Include dependencies to multiple examinations! -> multiple PAPValues for ProcesscaseActivityParameter entry for
+    # dependency possible, depending on number of exmination dependencies for diagnosis.
 
     print(re.sub(r"( +)", " ", sql))
