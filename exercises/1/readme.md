@@ -15,9 +15,18 @@ Note that some of these assumptions are almost guaranteed to misrepresent the da
 these are not available) but are considered useful in converging to a useful integrated data model in terms of stability 
 and comparability.
 
+##### TODOS
+
+* Elaborate on "Problem" section.
+* No idea what "time precision" is for PCAs.
+* No idea how to fill "PossibleValue".
+
 ##### Problems
 
 TODO
+
+* `Lokalisation Fermetastasen` is supposeed to depend on MRT and CT, but not all cases provide both and yet have been 
+assigned a diagnosis.
 
 ##### Assumptions
 
@@ -50,7 +59,7 @@ attributes missing).
   * All other date fields are assumed to reflect one operation each. Both operation and stay in the hospital are, in 
   line with the assumptions made above to allow for identification and rectification of those insufficiently specified 
   timeframes. 
-* Diagnoses are assumed to have been made at the same time as their latest related examination.
+* Diagnoses are assumed to have been made at the same time as the latest necessary examination.
 
 **2. Integrate the data into the given data integration model from Figure 1. (4 points)**  
 

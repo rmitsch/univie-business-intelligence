@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import argparse
 from datetime import datetime
+import numpy as np
 
 
 def is_timestamp_valid(timestamp):
@@ -59,11 +60,6 @@ if __name__ == '__main__':
         "AJCC Stadium Therapie": ["Magnetresonanztomographie", "Computertomographie", "Labor"]
     }
 
-    # todo Format insert of PossibleValues. What's suposed to go in here?
-    # sql += """
-    #     insert into PossibleValue
-    # """
-
     #######################################################################
     # 1. Activities.
     #######################################################################
@@ -93,8 +89,6 @@ if __name__ == '__main__':
     #######################################################################
     # 4. ProcesscaseActivity.
     #######################################################################
-
-    # todo What's time precision? Add.
 
     ###########################################
     # 4. 1. (a) Medications from DB.
@@ -150,7 +144,7 @@ if __name__ == '__main__':
     """.replace("\n", " ").strip()
 
     ###########################################
-    # 2. 2. (b) Hospital stays from spreadsheet.
+    # 4. 2. (b) Hospital stays from spreadsheet.
     ###########################################
 
     for idx, patient in df.iterrows():
@@ -263,28 +257,26 @@ if __name__ == '__main__':
     ###########################################
 
     for idx, patient in df.iterrows():
-        for examination_date in [
-            patient[date_col]
-            for date_col in [
-                "Lokalisation", "AJCC Stadium", "MRT Diagnose", "CT Diagnose", "Lokalisation Fernmetastasen",
-                "Tumormarker LDH", "AJCC Stadium Therapie"
-            ]
+        for col in [
+            "Lokalisation", "AJCC Stadium", "MRT Diagnose", "CT Diagnose", "Lokalisation Fernmetastasen",
+            "Tumormarker LDH", "AJCC Stadium Therapie"
         ]:
-            # todo get corresponding examination date column, check date
-            pass
-            # sql += "\n" + """
-            #     insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision)
-            #         select
-            #             p.id, a.id, '{start}', '{end}', 0
-            #         from Processcase p
-            #         inner join Activity a on
-            #             a.name = 'examination'
-            #         where
-            #             p.externalidentifier = '{patient_id}'
-            #     ;
-            # """.format(
-            #     start=str(operation_date), end=str(operation_date), patient_id=patient.Patient
-            # ).replace("\n", " ").strip()
+            # Add only if patient had diagnoses in current column.
+            if type(patient[col]) != float or not np.isnan(patient[col]):
+                examination_date = max([patient[exam_col] for exam_col in diagnosis_to_examinations[col]])
+                sql += "\n" + """
+                    insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision)
+                        select
+                            p.id, a.id, '{start}', '{end}', 0
+                        from Processcase p
+                        inner join Activity a on
+                            a.name = 'diagnosis'
+                        where
+                            p.externalidentifier = '{patient_id}'
+                    ;
+                """.format(
+                    start=str(examination_date), end=str(examination_date), patient_id=patient.Patient
+                ).replace("\n", " ").strip()
 
     #######################################################################
     # 5. PPValue.
