@@ -23,12 +23,13 @@ and comparability.
 
 ##### Problems
 
-TODO
-
 * `Lokalisation Fermetastasen` is supposeed to depend on MRT and CT, but not all cases provide both and yet have been 
 assigned a diagnosis.
 
 ##### Assumptions
+
+Note that all assumptions are valid only for the provided data set and might not be reasonably extended to unseen data
+with diverging (dependencies between) attribute values. 
 
 _General assumptions_:
 * Patients in spreadsheet and database are treated as different entities, since their cases don't obviously overlap and 
@@ -42,8 +43,11 @@ it.
 * The patient-to-column structure in the spreadsheet precludes more than one ProcesscaseActivity of the same type and 
 the same name (i. e. an examination of type `Labor`) for one patient on one day occuring there - i. e. multiple values 
 in one cell are not permitted.
+* `Therapie` as used in the spreadsheet is considered to be a medication that takes place during a hospital stay.
 
-_Assumptions w.r.t. date and time (followed from top to bottom)_:  
+_Assumptions w.r.t. date and time (followed from top to bottom)_:
+* One PA might be contained in another (e. g. a medication takes place during a hospital stay), but PAs must not overlap
+or take place at the same instant.
 * If a PCAs date is not known (e. g. in case of `KrankenhausaufenthaltLeistung` in database), we assume the date and 
 time of this patient's admission into the hospital as date for the corresponding PCA.
 * If a PCAs start time is not known (e. g. for `Therapiesitzung` in the spreadsheet), it 
@@ -56,7 +60,7 @@ attributes missing).
   * The time span between `Erstuntersuchung` and `Histologische Primärexzision` to be one hospital stay. Other 
   activities, such as `MRT Diagnose`, are considered to be check-ups that take place after the original hospital stay 
   has been completed.
-  * All other date fields are assumed to reflect one operation each. Both operation and stay in the hospital are, in 
+  * All other date fields are assumed to reflect one operation each. Both operation and stay in the hospital are in 
   line with the assumptions made above to allow for identification and rectification of those insufficiently specified 
   timeframes. 
 * Diagnoses are assumed to have been made at the same time as the latest necessary examination.
