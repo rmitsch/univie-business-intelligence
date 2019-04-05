@@ -48,6 +48,7 @@ if __name__ == '__main__':
         ],
         "ProcesscaseParameters": [
             ("patient_first_name", 1),
+            ("patient_middle_name", 1),
             ("patient_last_name", 1),
             ("patient_year_of_birth", 0),
             ("patient_month_of_birth", 0),
@@ -103,10 +104,106 @@ if __name__ == '__main__':
     )
 
     #######################################################################
-    # 4. ProcesscaseParamter and PPValue.
+    # 4. ProcesscaseParameter and PPValue.
     #######################################################################
 
-    # Note: Only record type in Processcase table are patients.
+    ###########################################
+    # 4. 1. From DB.
+    ###########################################
+
+    # PPs.
+    sql_template = "\n" + """
+        insert into ProcesscaseParameter (processcaseId, parameterId)
+            select 
+                pc.id, param.id
+            from 
+                Patient p
+            inner join Processcase pc on
+                cast(pc.externalidentifier as int) = p.id
+            inner join parameter param on
+                param.name = '{param_name}'
+            ;
+    """.replace("\n", " ").strip()
+    sql += sql_template.format(param_name="patient_first_name")
+    sql += sql_template.format(param_name="patient_last_name")
+    sql += sql_template.format(param_name="patient_year_of_birth")
+
+    # PPValues.
+    sql_template = "\n" + """
+            insert into PPValue (PPId, pvalue)
+                select 
+                    pp.id, p.{attr_name}
+                from 
+                    Patient p
+                inner join Processcase pc on
+                    cast(pc.externalidentifier as int) = p.id
+                inner join parameter param on
+                    param.name = '{param_name}'
+                inner join ProcesscaseParameter pp on
+                    pp.processcaseId = pc.id and
+                    pp.parameterId = param.id
+                ;
+        """.replace("\n", " ").strip()
+    sql += sql_template.format(attr_name="vorname", param_name="patient_first_name")
+    sql += sql_template.format(attr_name="nachname", param_name="patient_last_name")
+    sql += sql_template.format(attr_name="geburtsjahr", param_name="patient_year_of_birth")
+
+    ###########################################
+    # 4. 2. From spreadsheet.
+    ###########################################
+
+    sql_template = "\n" + """
+        insert into ProcesscaseParameter (processcaseId, parameterId)
+            select 
+                pc.id, p.id
+            from 
+                Processcase pc
+            inner join parameter p on
+                p.name = '{param_name}'
+            where
+                pc.externalidentifier = '{ext_id}'
+            ;
+    """.replace("\n", " ").strip()
+
+    # PPs.
+    for idx, patient in df.iterrows():
+        sql += sql_template.format(param_name="patient_first_name", ext_id=patient.Patient)
+        if len(patient.Patient.split()) > 3:
+            sql += sql_template.format(param_name="patient_middle_name", ext_id=patient.Patient)
+        sql += sql_template.format(param_name="patient_last_name", ext_id=patient.Patient)
+
+        sql += sql_template.format(param_name="patient_year_of_birth", ext_id=patient.Patient)
+        sql += sql_template.format(param_name="patient_month_of_birth", ext_id=patient.Patient)
+        sql += sql_template.format(param_name="patient_day_of_birth", ext_id=patient.Patient)
+
+    # PPValues.
+    sql_template = "\n" + """
+        insert into PPValue (PPId, pvalue)
+            select 
+                pp.id, '{value}'
+            from 
+                Processcase pc
+            inner join parameter p on
+                p.name = '{param_name}'
+            inner join ProcesscaseParameter pp on
+                pp.processcaseId = pc.id and
+                pp.parameterId = p.id
+            where
+                pc.externalidentifier = '{ext_id}'
+            ;
+    """.replace("\n", " ").strip()
+
+    for idx, patient in df.iterrows():
+        names = patient.Patient.split()
+        sql += sql_template.format(param_name="patient_first_name", value=names[0], ext_id=patient.Patient)
+        if len(names) > 3:
+            sql += sql_template.format(param_name="patient_middle_name", value=" ".join(names[1:-1]), ext_id=patient.Patient)
+        sql += sql_template.format(param_name="patient_last_name", value=names[-1], ext_id=patient.Patient)
+
+        birthdate = patient.Geburtsdatum
+        sql += sql_template.format(param_name="patient_year_of_birth", value=birthdate.year, ext_id=patient.Patient)
+        sql += sql_template.format(param_name="patient_month_of_birth", value=birthdate.month, ext_id=patient.Patient)
+        sql += sql_template.format(param_name="patient_day_of_birth", value=birthdate.day, ext_id=patient.Patient)
 
     #######################################################################
     # 5. ProcesscaseActivity, ProcesscaseActivityParameters, PAPValue.
@@ -473,7 +570,6 @@ if __name__ == '__main__':
         ]:
             # Add only if patient had diagnoses in current column.
             if type(patient[col]) != float or not np.isnan(patient[col]):
-                print(patient.Patient, col)
                 examination_date = max([patient[exam_col] for exam_col in diagnosis_to_examinations[col]])
 
                 # ("diagnosis_name", 1),

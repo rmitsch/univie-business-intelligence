@@ -18,6 +18,7 @@ delete from PAPValue;
 
 insert into Activity (name) values ('operation'), ('hospital_stay'), ('medication'), ('examination'), ('diagnosis');
 insert into Parameter (name, type) values ('patient_first_name', 1);
+insert into Parameter (name, type) values ('patient_middle_name', 1);
 insert into Parameter (name, type) values ('patient_last_name', 1);
 insert into Parameter (name, type) values ('patient_year_of_birth', 0);
 insert into Parameter (name, type) values ('patient_month_of_birth', 0);
@@ -32,6 +33,42 @@ insert into Parameter (name, type) values ('diagnosis_result', 1);
 insert into Parameter (name, type) values ('diagnosis_depends_on_examination', 0);
 insert into Processcase (externalidentifier) select id from Patient;
 insert into Processcase (externalidentifier) values ('Ano10 Nym10'), ('Ano11 Nym11'), ('An12 On12 Ym12');
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, param.id from Patient p inner join Processcase pc on cast(pc.externalidentifier as int) = p.id inner join parameter param on param.name = 'patient_first_name' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, param.id from Patient p inner join Processcase pc on cast(pc.externalidentifier as int) = p.id inner join parameter param on param.name = 'patient_last_name' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, param.id from Patient p inner join Processcase pc on cast(pc.externalidentifier as int) = p.id inner join parameter param on param.name = 'patient_year_of_birth' ;
+insert into PPValue (PPId, pvalue) select pp.id, p.vorname from Patient p inner join Processcase pc on cast(pc.externalidentifier as int) = p.id inner join parameter param on param.name = 'patient_first_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = param.id ;
+insert into PPValue (PPId, pvalue) select pp.id, p.nachname from Patient p inner join Processcase pc on cast(pc.externalidentifier as int) = p.id inner join parameter param on param.name = 'patient_last_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = param.id ;
+insert into PPValue (PPId, pvalue) select pp.id, p.geburtsjahr from Patient p inner join Processcase pc on cast(pc.externalidentifier as int) = p.id inner join parameter param on param.name = 'patient_year_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = param.id ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_first_name' where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_last_name' where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_year_of_birth' where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_month_of_birth' where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_day_of_birth' where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_first_name' where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_last_name' where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_year_of_birth' where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_month_of_birth' where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_day_of_birth' where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_first_name' where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_last_name' where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_year_of_birth' where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_month_of_birth' where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into ProcesscaseParameter (processcaseId, parameterId) select pc.id, p.id from Processcase pc inner join parameter p on p.name = 'patient_day_of_birth' where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into PPValue (PPId, pvalue) select pp.id, 'Ano10' from Processcase pc inner join parameter p on p.name = 'patient_first_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into PPValue (PPId, pvalue) select pp.id, 'Nym10' from Processcase pc inner join parameter p on p.name = 'patient_last_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into PPValue (PPId, pvalue) select pp.id, '1972' from Processcase pc inner join parameter p on p.name = 'patient_year_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into PPValue (PPId, pvalue) select pp.id, '9' from Processcase pc inner join parameter p on p.name = 'patient_month_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into PPValue (PPId, pvalue) select pp.id, '20' from Processcase pc inner join parameter p on p.name = 'patient_day_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano10 Nym10' ;
+insert into PPValue (PPId, pvalue) select pp.id, 'Ano11' from Processcase pc inner join parameter p on p.name = 'patient_first_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into PPValue (PPId, pvalue) select pp.id, 'Nym11' from Processcase pc inner join parameter p on p.name = 'patient_last_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into PPValue (PPId, pvalue) select pp.id, '1968' from Processcase pc inner join parameter p on p.name = 'patient_year_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into PPValue (PPId, pvalue) select pp.id, '11' from Processcase pc inner join parameter p on p.name = 'patient_month_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into PPValue (PPId, pvalue) select pp.id, '30' from Processcase pc inner join parameter p on p.name = 'patient_day_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'Ano11 Nym11' ;
+insert into PPValue (PPId, pvalue) select pp.id, 'An12' from Processcase pc inner join parameter p on p.name = 'patient_first_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into PPValue (PPId, pvalue) select pp.id, 'Ym12' from Processcase pc inner join parameter p on p.name = 'patient_last_name' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into PPValue (PPId, pvalue) select pp.id, '1981' from Processcase pc inner join parameter p on p.name = 'patient_year_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into PPValue (PPId, pvalue) select pp.id, '12' from Processcase pc inner join parameter p on p.name = 'patient_month_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'An12 On12 Ym12' ;
+insert into PPValue (PPId, pvalue) select pp.id, '6' from Processcase pc inner join parameter p on p.name = 'patient_day_of_birth' inner join ProcesscaseParameter pp on pp.processcaseId = pc.id and pp.parameterId = p.id where pc.externalidentifier = 'An12 On12 Ym12' ;
 insert into ProcesscaseActivity (processcaseId, activityId, starttime, stoptime, timeprecision) select p.id, a.id, m.ausgabe, m.ausgabe, 0 from Medikation m inner join Activity a on a.name = 'medication' inner join Processcase p on cast(p.externalidentifier as int) = m.patientId ;
 insert into ProcesscaseActivityParameter (processcaseactivityid, parameterid) select pca.id, p.id from Medikation m inner join Activity a on a.name = 'medication' inner join Processcase pc on cast(pc.externalidentifier as int) = m.patientId inner join ProcesscaseActivity pca on pca.processcaseId = pc.id and pca.activityId = a.id and pca.starttime = m.ausgabe inner join Parameter p on p.name = 'medication_dosage' ;
 insert into ProcesscaseActivityParameter (processcaseactivityid, parameterid) select pca.id, p.id from Medikation m inner join Activity a on a.name = 'medication' inner join Processcase pc on cast(pc.externalidentifier as int) = m.patientId inner join ProcesscaseActivity pca on pca.processcaseId = pc.id and pca.activityId = a.id and pca.starttime = m.ausgabe inner join Parameter p on p.name = 'medication_name' ;
@@ -321,3 +358,45 @@ insert into PAPValue (PAPId, pvalue) values (128, 'AJCC Stadium Therapie');
 insert into PAPValue (PAPId, pvalue) values (130, 'Magnetresonanztomographie');
 insert into PAPValue (PAPId, pvalue) values (131, 'Computertomographie');
 insert into PAPValue (PAPId, pvalue) values (132, 'Labor');
+
+
+select * from PPValue ppv inner join ProcesscaseParameter pp on ppv.PPId = pp.id inner join Parameter p on p.id = pp.parameterId;
+
+
+select 
+    pp.id, p.*
+from 
+    Patient p
+inner join Processcase pc on
+    cast(pc.externalidentifier as int) = p.id
+inner join parameter param on
+    param.name = 'patient_last_name'
+inner join ProcesscaseParameter pp on
+    pp.processcaseId = pc.id and
+    pp.parameterId = param.id
+;
+
+select * from ProcesscaseParameter;
+
+select 
+    p.*, pp.*
+from 
+    Patient p
+inner join Processcase pc on
+    cast(pc.externalidentifier as int) = p.id
+inner join parameter param on
+    param.name = 'patient_last_name'
+left join ProcesscaseParameter pp on
+    pp.parameterId = param.id and
+    pp.processcaseId = pc.id
+;
+
+select 
+    pc.id, p.id, *
+from 
+    Patient p
+inner join Processcase pc on
+    cast(pc.externalidentifier as int) = p.id
+inner join parameter param on
+    param.name = 'patient_last_name'
+;

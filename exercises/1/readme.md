@@ -3,6 +3,17 @@
 ### Notes
 The original SQL code was translated to a SQLite dialect using https://www.jooq.org/translate/.
 
+##### TODOS
+
+* Elaborate on "Problem" section.
+* No idea what "time precision" is for PCAs.
+* No idea how to fill "PossibleValue".
+* SQLtoMXML - how? Move to PSQL necessary?
+* MXML structure unclear - should we compose only AudiTrailEntries or also other entities?
+
+-> WRITE FORUM POST
+
+
 ## Tasks
 
 Abbreviations used in the following:
@@ -11,20 +22,16 @@ Abbreviations used in the following:
 
 **1. Create a list of problems and assumptions when/for doing the integration. (2 points)**
 
-Note that some of these assumptions are almost guaranteed to misrepresent the data (e. g. assuming date and times where 
+Note that some of these assumptions are guaranteed to misrepresent the data (e. g. assuming date and times where 
 these are not available) but are considered useful in converging to a useful integrated data model in terms of stability 
 and comparability.
 
-##### TODOS
-
-* Elaborate on "Problem" section.
-* No idea what "time precision" is for PCAs.
-* No idea how to fill "PossibleValue".
-
 ##### Problems
 
-* `Lokalisation Fermetastasen` is supposeed to depend on MRT and CT, but not all cases provide both and yet have been 
+* `Lokalisation Fermetastasen` is suppossed to depend on MRT and CT, but not all cases provide both and yet have been 
 assigned a diagnosis.
+* Some records possess data records others do not - so we either discard the additional data or conceive a structure 
+that allows additional data to be stored optionally.
 
 ##### Assumptions
 
@@ -97,9 +104,6 @@ ProcessCaseActivityParameters (assuming ProcesscaseActivity <-> KrankenhausAufen
 * Localisation
 * LDH marker
 
-TODO how to reflect depencency for diagnoses? param for "depends on other activity"?
-lowest common denominator for normalizing data (e. g. exzision)
-matching patients?
 
 **3. Export the data from the data integration model into MXML and submit the resulting MXML file.
 One option to do so is using the SQLXML standard. (3 points)**  
