@@ -1,4 +1,5 @@
-# Exercise 1: Data Transformation and Integration
+# Business Intelligence - Exercise 1: Data Transformation and Integration
+**Author: Raphael Mitsch (a1006529).**
 
 ### Notes
 * The original SQL code was translated to a SQLite dialect using https://www.jooq.org/translate/.
@@ -6,6 +7,18 @@
 * Similar with the table `PossibleValue` - it seems impractical at best and impossible at worst to fill a table with all 
 possible values for non-finite sets (e. g. arbitrary patient names). Most likely I misunderstood the purpose of this 
 table; I ignored it.
+* The resulting SQLite database and .mxml log are included in the uploaded archive. To reproduce the results please be 
+referred to the next section (_Usage_). 
+
+## Usage
+
+1. Set up Conda environment using provided `environment.yml` and activate it.
+2. Generate the import script with `python import.py -i /path/to/DermatologischePatientendaten.xls > data.sql`. 
+3. Apply the generated import script with an arbitrary SQLite database tool (i. e. _SQLite Studio_ or any programmatic 
+SQLite client API).
+4. Store the resulting database as `data.sqlite` in the same folder as `generate_mxml.py`.
+5. Generate the .mxml file using `generate_mxml.py > log.mxml`.
+
 
 ## Tasks
 
@@ -15,16 +28,19 @@ Abbreviations used in the following:
 
 **1. Create a list of problems and assumptions when/for doing the integration. (2 points)**
 
-Note that some of these assumptions are guaranteed to misrepresent the data (e. g. assuming date and times where 
-these are not available) but are considered useful in converging to a useful integrated data model in terms of stability 
-and comparability.
-
 ##### Problems
 
+* Some of assumptions made are guaranteed to misrepresent the data (e. g. assuming date and times where 
+these are not available) but might be considered useful in converging to a useful integrated data model in terms of 
+stability and comparability.
 * `Lokalisation Fermetastasen` is suppossed to depend on MRT and CT, but not all cases provide both and yet have been 
 assigned a diagnosis.
 * Some records possess data records others do not - so we either discard the additional data or conceive a structure 
-that allows additional data to be stored optionally.
+that allows additional data to be stored optionally. E. g.: Patients are associated with their full birthdate in the 
+spreadsheet, but only their birth year in the database.
+* The two data sources have diverging sets of activities.
+* The type of the activities is not always clear - e. g. how are `Primärexzision` and `Histologische Exzision` related? 
+Are they both operations? Examinations? Both? Domain knowledge is clearly lacking on my side.
 
 ##### Assumptions
 
@@ -48,11 +64,11 @@ in one cell are not permitted.
 _Assumptions w.r.t. date and time (followed from top to bottom)_:
 * One PA might be contained in another (e. g. a medication takes place during a hospital stay), but PAs must not overlap
 or take place at the same instant.
-* If a PCAs date is not known (e. g. in case of `KrankenhausaufenthaltLeistung` in database), we assume the date and 
+* If a PCA's date is not known (e. g. in case of `KrankenhausaufenthaltLeistung` in database), we assume the date and 
 time of this patient's admission into the hospital as date for the corresponding PCA.
-* If a PCAs start time is not known (e. g. for `Therapiesitzung` in the spreadsheet), it 
+* If a PCA's start time is not known (e. g. for `Therapiesitzung` in the spreadsheet), it 
 is assumed to be 00:00 on the corresponding day.
-* If a PCAs end time is not known (e. g. for `Medikation` in the database), it is considered to be the same as the end time. While this is guaranteed to be not 
+* If a PCA's end time is not known (e. g. for `Medikation` in the database), it is considered to be the same as the end time. While this is guaranteed to be not 
 correct, since no action can take place instantaneously, it allows fitting the data into the supplied immutable data 
 structure while maintaining a property that can be exploited to locate records which where imported with those 
 attributes missing). 
@@ -67,37 +83,9 @@ attributes missing).
 
 **2. Integrate the data into the given data integration model from Figure 1. (4 points)**  
 
-Table and spreadsheet mapping:
-* Patient <-> Processcase
-* Leistung, KrankenhausaufenthaltLeistung, Medication <-> ProcessCaseActivity + parameter tables
-* "Operation", "Krankenhausaufenthalt", "Medikation", various column header in spreadsheet <-> Activity
--> use name instead of just "Operation" so we can't duplicate params? applies to all params though. we could presume 
-additional constraints preventing multiple params with the same name for one Processcase (except those which explicitly 
-can occur multple times, such as "depends on" or "derived from").
-
-Processcase:
-* externalidentifier -> patient ID
-
-ProcesscaseParameters (assuming Processcase <-> Krankenhausaufenthalt):
-* Processcase ID
-* Patient first name
-* Patient last name
-* Patient year of birth
-* Patient month of birth
-* Patient day of birth 
-* Patient gender
-
-
-ProcessCaseActivityParameters (assuming ProcesscaseActivity <-> KrankenhausAufenthaltsLeistung + Medikation):
-* Medication name
-* Medication dosage
-* Name of operation
-* MRT diagnosis
-* CT diagnosis
-* Localisation
-* LDH marker
-
+See `import.py`. The `pandas` package is utilized to read and integrate data from the spreadsheet.
 
 **3. Export the data from the data integration model into MXML and submit the resulting MXML file.
 One option to do so is using the SQLXML standard. (3 points)**  
-* dsdsd
+
+See `generate_mxml.py`. The .mxml file is generated in the Python script; SQLXML was not used.
