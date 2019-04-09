@@ -1,15 +1,11 @@
 # Exercise 1: Data Transformation and Integration
 
 ### Notes
-The original SQL code was translated to a SQLite dialect using https://www.jooq.org/translate/.
-
-##### TODOS
-
-* Elaborate on "Problems" section.
-* No idea what "time precision" is for PCAs.
-* No idea how to fill "PossibleValue".
-* MXML structure unclear - should we compose only AudiTrailEntries or also other entities?
-
+* The original SQL code was translated to a SQLite dialect using https://www.jooq.org/translate/.
+* I was not aware which role the attribute `ProcesscaseActivity.timeprecision` is supposed to play. I hence ignored it. 
+* Similar with the table `PossibleValue` - it seems impractical at best and impossible at worst to fill a table with all 
+possible values for non-finite sets (e. g. arbitrary patient names). Most likely I misunderstood the purpose of this 
+table; I ignored it.
 
 ## Tasks
 
