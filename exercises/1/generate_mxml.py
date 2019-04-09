@@ -34,7 +34,6 @@ if __name__ == '__main__':
             patients[row[0]] = {}
         patients[row[0]][row[1]] = row[2]
 
-    print(patients)
     # 2. Get all PCAs/PCAPs/PAPValues.
     events = {}
     for row in c.execute("""
@@ -70,23 +69,23 @@ if __name__ == '__main__':
     for event_id in events:
         event = events[event_id]
         audit_trail_entry_template = """
-                <AuditTrailEntry>
-                    <WorkflowModelElement>{workflow_model_element}</WorkflowModelElement>
-                    {data}
-                    <EventType>{event_type}</EventType>
-                    <Timestamp>{timestamp}</Timestamp>
-                    <Originator>{originator}</Originator>
-                </AuditTrailEntry>
+            <AuditTrailEntry>
+                <WorkflowModelElement>{workflow_model_element}</WorkflowModelElement>
+                {data}
+                <EventType>{event_type}</EventType>
+                <Timestamp>{timestamp}</Timestamp>
+                <Originator>{originator}</Originator>
+            </AuditTrailEntry>
         """
 
         data = ""
         for param in event["parameters"]:
             if list(param.keys())[0] is not None:
-                data += '\n\t\t\t\t\t\t<Attribute name="' + list(param.keys())[0] + '">' + list(param.values())[0] + '</Attribute>'
+                data += '\n\t\t\t\t\t<Attribute name="' + list(param.keys())[0] + '">' + list(param.values())[0] + '</Attribute>'
         for param in event["patient"]:
-            data += '\n\t\t\t\t\t\t<Attribute name="' + param + '">' + event["patient"][param] + '</Attribute>'
+            data += '\n\t\t\t\t\t<Attribute name="' + param + '">' + event["patient"][param] + '</Attribute>'
         if len(data):
-            data = "<Data>\n" + data[1:] + "\n\t\t\t\t\t</Data>"
+            data = "<Data>\n" + data[1:] + "\n\t\t\t\t</Data>"
 
         if event["start"] != event["stop"]:
             audit_trail_entry_string += audit_trail_entry_template.format(
