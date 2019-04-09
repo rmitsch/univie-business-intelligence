@@ -5,13 +5,10 @@ The original SQL code was translated to a SQLite dialect using https://www.jooq.
 
 ##### TODOS
 
-* Elaborate on "Problem" section.
+* Elaborate on "Problems" section.
 * No idea what "time precision" is for PCAs.
 * No idea how to fill "PossibleValue".
-* SQLtoMXML - how? Move to PSQL necessary?
 * MXML structure unclear - should we compose only AudiTrailEntries or also other entities?
-
--> WRITE FORUM POST
 
 
 ## Tasks
