@@ -48,7 +48,8 @@ if __name__ == '__main__':
     # scipy.stats.norm
     x = norm.rvs(size=100)
     print(x.shape)
-    # todo how to compute normal test for significance test?
+
+    # todo how to compute normal test for significance test? Which samples would we examine w.r.t. landing pages?
     print(contingency_table)
     stat, p_chi2, dof, expected = chi2_contingency(contingency_table.values)
     print(
