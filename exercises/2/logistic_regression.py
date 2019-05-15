@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression as SKLearnLogisticRegression
 from typing import Tuple
+from sklearn.utils import resample
 
 
 class LogisticRegression:
@@ -140,6 +141,40 @@ def evaluate(
         np.count_nonzero(predictions[np.where(ground_truth == 1)] == 0)
 
 
+def compute_bootstrap_accuracy(
+        X: np.ndarray,
+        y: np.ndarray,
+        alpha: float = 0.95,
+        n_bootstraps: int = 50,
+        n_train: float = 0.5,
+        learning_rate: float = 0.0005
+) -> Tuple[float, float]:
+    """
+    Compute bootstrap-confidence interval for classification of test set with confidence as specified.
+    Parameters similar to sklearn's sklearn.cross_validation.Bootstrap.
+    :param X:
+    :param y:
+    :param alpha:
+    :param n_bootstraps:
+    :param n_train:
+    :param learning_rate:
+    :return:
+    """
+
+    # Compute statistics.
+    stats = []
+    for i in range(n_bootstraps):
+        print("  Iteration #" + str(i))
+        X_train, X_test, y_train, y_test = train_test_split(features.values, labels.values, test_size=1 - n_train)
+        tp, fp, tn, fn = evaluate(X_train, y_train, X_test, y_test, learning_rate=learning_rate)
+        stats.append((tp + fn) / (tp + tn + fp + fn))
+
+    # Compute confidence interval.
+    return \
+        max(0.0, np.percentile(stats, ((1.0 - alpha) / 2.0) * 100)) * 100, \
+        min(1.0, np.percentile(stats, (alpha + ((1.0 - alpha) / 2.0)) * 100)) * 100
+
+
 if __name__ == '__main__':
     wine_df = pd.read_csv("winequality_binary.csv").drop(columns=["Unnamed: 0"])
     features = wine_df.drop(columns=["quality"])
@@ -151,34 +186,40 @@ if __name__ == '__main__':
 
     # todo documentation (in readme.md?)
 
-    # Search for best parameter for learning rate, compare with sklearn implementation.
-    learning_rates = (5e-2, 1e-2, 5e-3, 1e-3, 5e-4, 1e-4)
-    n_splits = 3
-    f1_scores = {lr: 0 for lr in learning_rates}
-    f1_scores["sklearn"] = 0
+    #############################################################
+    # 3. Logistic regression.
+    #############################################################
 
-    for j in range(n_splits):
-        print("In split", j + 1)
-
-        X_train, X_test, y_train, y_test = train_test_split(features.values, labels.values, test_size=0.33)
-
-        # Evaluate own implementation with different parametrizations.
-        for learning_rate in learning_rates:
-            print("  learning rate =", learning_rate)
-            tp, fp, tn, fn = evaluate(X_train, y_train, X_test, y_test, learning_rate=learning_rate)
-            precision = tp / (tp + fp)
-            recall = tp / (tp + fn)
-            f1_scores[learning_rate] += 2 * precision * recall / (precision + recall)
-
-        # Evaluate with sklearn.
-        tp, fp, tn, fn = evaluate(X_train, y_train, X_test, y_test, use_own=False)
-        precision = tp / (tp + fp)
-        recall = tp / (tp + fn)
-        f1_scores["sklearn"] += 2 * precision * recall / (precision + recall)
-
-    for config in f1_scores:
-        f1_scores[config] /= n_splits
-        print(str(config) + ": " + str(f1_scores[config]))
+    # print("*** Evalution + hyperparameter search ***")
+    #
+    # # Search for best parameter for learning rate, compare with sklearn implementation.
+    # learning_rates = (5e-2, 1e-2, 5e-3, 1e-3, 5e-4, 1e-4)
+    # n_splits = 3
+    # f1_scores = {lr: 0 for lr in learning_rates}
+    # f1_scores["sklearn"] = 0
+    #
+    # for j in range(n_splits):
+    #     print("  In split", j + 1)
+    #
+    #     X_train, X_test, y_train, y_test = train_test_split(features.values, labels.values, test_size=0.33)
+    #
+    #     # Evaluate own implementation with different parametrizations.
+    #     for learning_rate in learning_rates:
+    #         print("    learning rate =", learning_rate)
+    #         tp, fp, tn, fn = evaluate(X_train, y_train, X_test, y_test, learning_rate=learning_rate)
+    #         precision = tp / (tp + fp)
+    #         recall = tp / (tp + fn)
+    #         f1_scores[learning_rate] += 2 * precision * recall / (precision + recall)
+    #
+    #     # Evaluate with sklearn.
+    #     tp, fp, tn, fn = evaluate(X_train, y_train, X_test, y_test, use_own=False)
+    #     precision = tp / (tp + fp)
+    #     recall = tp / (tp + fn)
+    #     f1_scores["sklearn"] += 2 * precision * recall / (precision + recall)
+    #
+    # for config in f1_scores:
+    #     f1_scores[config] /= n_splits
+    #     print("  " + str(config) + ": " + str(f1_scores[config]))
 
     """
     Results:
@@ -191,3 +232,10 @@ if __name__ == '__main__':
         
         sklearn: 0.7708290874277166
     """
+
+    #############################################################
+    # 4. Confidence interval of prediction accuracy.
+    #############################################################
+
+    print("*** Bootstrapping ***")
+    print(compute_bootstrap_accuracy(features, labels, n_bootstraps=25, n_train=0.7))
