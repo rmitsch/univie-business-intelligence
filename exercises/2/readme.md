@@ -1,5 +1,8 @@
 # Exercise 3
 
+General remark: Each exercise corresponds to one python file. The results can be replicated by running these code files 
+directly (setup and configuration is done in the `main` section at the bottom of the files).
+
 ## 1. Bayes' Theorem
 
 Note: We assume that 0.5% of the population are drug users, not 0.05% - otherwise the percentages of drug users and non-users don't add up to 100.
@@ -31,6 +34,7 @@ Code can be found in `a_b_testing.py`.
 * New page: `0.1191`.
 
 ### Binomial Test 
+
 We phrase H_0 as follows: The probability of observing the specified number of conversions with the specified landing 
 page version is not higher than 50%. This is a rephrased variant of the original hypothesis of "the probability of 
 conversion does not depend on the landing page". We used `p = 0.5` to reflect the equaliy assumption in H_0.
@@ -50,6 +54,7 @@ higher than the one from the new one and we have thousands of samples, so we wou
 more than even chance of success when compared to the new version.
   
 ### Chi-squared and Normal Test
+
 We assume H_0 to state that there is no significant difference in conversion rates between landing page versions.
 
 Significances in differences in conversion rates w.r.t. landing page versions.
