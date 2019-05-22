@@ -27,8 +27,8 @@ Code can be found in `a_b_testing.py`.
 40000:60000 = 40.0% of all visits were redirected to the new page.   
 
 *(b) What is the conversion rate for each version of the landing page?*  
-* Old page: 0.12063333333333333. 
-* New page: 0.1191.
+* Old page: `0.12063333333333333`. 
+* New page: `0.1191`.
 
 ### Binomial Test 
 We phrase H_0 as follows: The probability of observing the specified number of conversions with the specified landing 
@@ -36,8 +36,8 @@ page version is not higher than 50%. This is a rephrased variant of the original
 conversion does not depend on the landing page". We used `p = 0.5` to reflect the equaliy assumption in H_0.
 
 Probability of observing observed number of conversations given the assumptions above and using scipy's binomial test:
-* Old page: 6.317471224286417e-114. 
-* New page: 0.9999999999999999.
+* Old page: `6.317471224286417e-114`. 
+* New page: `0.9999999999999999`.
 
 Assuming a significance level of 0.05, we can interpret this result as follows: 
 * The probability for the old landing page is lower than our alpha. This means we can reject H_0 - 
@@ -53,8 +53,8 @@ more than even chance of success when compared to the new version.
 We assume H_0 to state that there is no significant difference in conversion rates between landing page versions.
 
 Significances in differences in conversion rates w.r.t. landing page versions.
-* χ2: p = 0.4709069331806466
-* normality test: p = 0.6616312516159468
+* χ2: `p = 0.4709069331806466`.
+* normality test: `p = 0.6616312516159468`.
 
 The χ2 result was computed by aggregating the available data to a contingency table before using scipy's 
 `chi2_contingency`. The normal test was computed manually by following the equation in the slides - computing 
@@ -73,7 +73,7 @@ We compared our implementation with sklearn's `sklearn.linear_model.LogisticRegr
 interfaces. While our model takes considerably longer to converge, it approximates sklearn's accuracy closely when the 
 right learning rate is chosen. We choose the F1 score to reflect the quality of the prediction for our evaluation. Our 
 implementation stops whenver the maximum number of iterations is reached or the result of the loss function converges to 
-a value that is lower than the specified threshold.
+a value that is lower than the specified threshold. We used a train-test split with a proportion of 2/3 : 1/3.
 
 Utilizing a grid search, the best learning rate seems to be 0.001. In the following a list of tried learning rate values 
 together with the computed F1-score:
@@ -92,3 +92,10 @@ however.
 
 ## Confidence Interval of the Prediction Accuracy
 
+We assumed a confidence level of 0.95 and ran all tests with our vanilla implementatin of logistic regresion and the 
+optimal learning rate found in the previous task. We implemented pseudocode for bootstrapping we found online and the
+same evaluation methds as for the previous task to gather a accuracy statistic. Following that, we pick the alpha-/
+confidence level-percentiles from this statistic.
+
+We used a train-test split with a proportion of 0.5 : 0.5, following sklearn's default values. We ran 50 iterations. 
+Predicting the results with these pre-conditions yields a 0.95-confidence of `(70.09375, 75.78645833333333)`.

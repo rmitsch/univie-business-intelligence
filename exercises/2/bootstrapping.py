@@ -29,7 +29,7 @@ def compute_bootstrap_accuracy(
     stats = []
     for i in range(n_bootstraps):
         print("  Iteration #" + str(i))
-        X_train, X_test, y_train, y_test = train_test_split(features.values, labels.values, test_size=1 - n_train)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=1 - n_train)
         tp, fp, tn, fn = evaluate(X_train, y_train, X_test, y_test, learning_rate=learning_rate)
         stats.append((tp + tn) / (tp + tn + fp + fn))
         print((tp + tn) / (tp + tn + fp + fn))
@@ -45,18 +45,12 @@ if __name__ == '__main__':
     features = wine_df.drop(columns=["quality"])
     labels = wine_df[["quality"]]
 
-    # Check distribution of class labels.
-    unique, counts = np.unique(labels.values, return_counts=True)
-    print(counts)
-
-    # todo documentation (in readme.md?)
-
     #############################################################
-    # 4. Confidence interval of prediction accuracy.
+    # Confidence interval of prediction accuracy.
     #############################################################
 
     print("*** Bootstrapping ***")
-    print(compute_bootstrap_accuracy(features, labels, n_bootstraps=50, n_train=0.7))
+    print(compute_bootstrap_accuracy(features.values, labels.values, n_bootstraps=50, n_train=0.7))
 
     """
     Results for 0.95 confidence interval with 50 iterations: (70.09375, 75.78645833333333).
