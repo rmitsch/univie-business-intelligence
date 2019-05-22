@@ -1,5 +1,7 @@
 import pandas as pd
-from scipy.stats import chi2, chi2_contingency, norm, normaltest, binom_test
+from scipy.stats import chi2_contingency, binom_test
+from scipy.special import ndtr
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -40,19 +42,32 @@ if __name__ == '__main__':
         " Old page: " + str(binom_test(num_conversions_old, n=num_conversions, p=0.5, alternative='two-sided')) + ".",
         "\n  New page: " + str(binom_test(num_conversions_new, n=num_conversions, p=0.5, alternative='two-sided')) + "."
     )
+    # p = 1.2634942448572834e-113.
     # Interpretation: We can reject H_0 (probability of conversion does not depend on landing page version).
 
     # 2.3. Under the same null hypothesis use the χ-squared test and the normal-test to measure the significance of the
-    # difference in the conversion-rates of the landing page versions.
-    # scipy.stats.chi2.cd with df=1
-    # scipy.stats.norm
-    x = norm.rvs(size=100)
-    print(x.shape)
+    # difference in the conversion-rates of the landing page versions. Same H_0 as in 2.2.
 
-    # todo how to compute normal test for significance test? Which samples would we examine w.r.t. landing pages?
-    print(contingency_table)
+    t_a = num_conversions_old / num_old_page
+    t_b = num_conversions_new / num_new_page
+    z = (t_a - t_b) / np.sqrt(
+        np.std(df[df.landing_page == "old_page"].converted) / num_old_page +
+        np.std(df[df.landing_page == "new_page"].converted) / num_new_page
+    )
+
     stat, p_chi2, dof, expected = chi2_contingency(contingency_table.values)
     print(
         "\n2.3. Significances in differences in conversion rates w.r.t. landing page versions.\n",
-        "χ2: p = " + str(p_chi2)
+        "χ2: p = " + str(p_chi2) +
+        "normality test: p = " + str(ndtr(z))
     )
+    # Interpretation: Both computed p-values are low, certainly lower than a reasonable alpha, hence we reject H_0 (that
+    # conversions do not depend on the landing page version).
+
+"""
+Hi,
+
+I have a question regarding task 2 in exercise 3 - I don't quite understand how to apply a test of normality to measure the significance in difference of conversion rates, since the it only measures how likely the normal distribution is for a given data series.
+
+I'd appreciate any hints - thanks!
+"""
