@@ -149,8 +149,6 @@ if __name__ == '__main__':
     unique, counts = np.unique(labels.values, return_counts=True)
     print(counts)
 
-    # todo documentation (in readme.md?)
-
     #############################################################
     # 3. Logistic regression.
     #############################################################
