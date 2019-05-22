@@ -63,11 +63,3 @@ if __name__ == '__main__':
     )
     # Interpretation: Both computed p-values are low, certainly lower than a reasonable alpha, hence we reject H_0 (that
     # conversions do not depend on the landing page version).
-
-"""
-Hi,
-
-I have a question regarding task 2 in exercise 3 - I don't quite understand how to apply a test of normality to measure the significance in difference of conversion rates, since the it only measures how likely the normal distribution is for a given data series.
-
-I'd appreciate any hints - thanks!
-"""
