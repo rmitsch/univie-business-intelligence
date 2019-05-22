@@ -1,6 +1,6 @@
 # Exercise 3
 
-General remark: Each exercise corresponds to one python file. The results can be replicated by running these code files 
+Each exercise (except for the first) corresponds to one python file. The results can be replicated by running these code files 
 directly (setup and configuration is done in the `main` section at the bottom of the files).
 
 ## 1. Bayes' Theorem
