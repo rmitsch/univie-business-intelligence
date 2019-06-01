@@ -2,8 +2,7 @@ import os
 import pandas as pd
 from fbprophet import Prophet
 import numpy as np
-import io
-import sys
+import matplotlib.pyplot as plt
 
 
 class suppress_stdout_stderr(object):
@@ -118,3 +117,27 @@ def evaluate_prophet_configuration(
         "MSE": np.mean(np.power(test_set.y - proph.predict(future).yhat.tail(4), 2))
     }
 
+
+def plot_salescount_per_week(
+        transactions: pd.DataFrame, products: pd.DataFrame, upcs: set, title: str
+):
+    """
+    Plot salescount per week.
+    :param transactions:
+    :param products:
+    :param upcs: UPCs to be drawn.
+    :param title:
+    :return:
+    """
+
+    salescount_by_week = compute_salescount_per_week(transactions, upcs)
+    salescount_by_week_plot_df = compute_salescount_per_week_plot_df(salescount_by_week, products)
+
+    plt.figure(figsize=(20, 10))
+    ax = plt.plot(salescount_by_week_plot_df.WEEK_END_DATE, salescount_by_week_plot_df.UNITS)
+    plt.gca().legend([
+        desc[1] for desc in salescount_by_week_plot_df.reset_index().columns.values if desc[0] == "UNITS"
+    ])
+    plt.title(title)
+
+    return ax

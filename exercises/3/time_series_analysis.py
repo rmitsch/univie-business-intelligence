@@ -15,6 +15,7 @@ import psutil
 if __name__ == '__main__':
     # Read/pre-process data.
     products: pd.DataFrame = pd.read_csv("data_products_lookup.csv", index_col="UPC")
+    products["extended_description"] = products["DESCRIPTION"] + " (" + products.index.astype(str) + ")"
     stores: pd.DataFrame = pd.read_csv("data_store_lookup.csv", index_col="STORE_ID")
     if not os.path.isfile("transactions.pkl"):
         transactions: pd.DataFrame = pd.read_csv("data_transactions.csv")
@@ -50,8 +51,11 @@ if __name__ == '__main__':
         products["extended_description"] = products["DESCRIPTION"] + " (" + products.index.astype(str) + ")"
         salescount_by_week_plot_df = utils.compute_salescount_per_week_plot_df(salescount_by_week, products)
 
-        # salescount_by_week_plot_df.plot(x="WEEK_END_DATE", y="UNITS", title="Sales count per week")
+        # plt.figure(figsize=(20, 10))
         # plt.plot(salescount_by_week_plot_df.WEEK_END_DATE, salescount_by_week_plot_df.UNITS)
+        # plt.gca().legend([
+        #     desc[1] for desc in salescount_by_week_plot_df.reset_index().columns.values if desc[0] == "UNITS"
+        # ])
         # plt.title("Sales count per week")
         # plt.grid()
         # plt.show()
@@ -76,24 +80,24 @@ if __name__ == '__main__':
         #     )
 
         # Plot occurence of promotions - one plot per promotion and top 5 product.
-        # for column in ("FEATURE", "DISPLAY", "TPR_ONLY"):
-        #     for ix, row in top5_prods_by_sales.iterrows():
-        #         extended_description = row.DESCRIPTION + " (" + str(ix) + ")"
-        #         salescount_by_week_plot = salescount_by_week.join(
-        #             products
-        #         )[["extended_description", "UNITS"]].reset_index().drop(
-        #             columns=["UPC"], errors="ignore"
-        #         ).plot(
-        #             x="WEEK_END_DATE",
-        #             y="UNITS",
-        #             title="Sales count per week with " + column + " promotions for \n " + extended_description
-        #         )
-        #
-        #         for dt in transactions[(transactions.UPC == ix) & (transactions[column] == 1)].WEEK_END_DATE.unique():
-        #             salescount_by_week_plot.axvline(dt, color='r', linestyle='--', lw=1)
-        #
-        #         plt.grid()
-        #         plt.show()
+        for column in ("FEATURE", "DISPLAY", "TPR_ONLY"):
+            for ix, row in top5_prods_by_sales.iterrows():
+                extended_description = row.DESCRIPTION + " (" + str(ix) + ")"
+                salescount_by_week_plot = salescount_by_week.join(
+                    products
+                )[["extended_description", "UNITS"]].reset_index().drop(
+                    columns=["UPC"], errors="ignore"
+                ).plot(
+                    x="WEEK_END_DATE",
+                    y="UNITS",
+                    title="Sales count per week with " + column + " promotions for \n " + extended_description
+                )
+
+                for dt in transactions[(transactions.UPC == ix) & (transactions[column] == 1)].WEEK_END_DATE.unique():
+                    salescount_by_week_plot.axvline(dt, color='r', linestyle='--', lw=1)
+
+                plt.grid()
+                plt.show()
 
         #################################
         # 1. 4.
