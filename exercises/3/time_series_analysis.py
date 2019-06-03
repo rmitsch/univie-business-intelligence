@@ -104,24 +104,24 @@ if __name__ == '__main__':
         #################################
 
         # W/o any tuning:
-        # for ix in top5_prods_by_sales.index.values:
-        #     # Split in train and test set..
-        #     base_df = salescount_by_week.loc[ix].reset_index().rename(columns={"WEEK_END_DATE": "ds", "UNITS": "y"})
-        #     split_date = base_df.max()["ds"] - pd.Timedelta(4, unit='w')
-        #     train_set = base_df[base_df.ds <= split_date]
-        #     test_set = base_df[base_df.ds > split_date]
-        #
-        #     proph = Prophet()
-        #     proph.fit(train_set)
-        #     future = proph.make_future_dataframe(periods=4, freq="W")
-        #     forecast = proph.predict(future)
-        #     # proph.plot(forecast)
-        #     # proph.plot_components(forecast)
-        #     # plt.show()
-        #
-        #     # MSE
-        #     mse = np.mean(np.power(test_set.y - forecast.yhat.tail(4), 2))
-        #     print(mse)
+        for ix in top5_prods_by_sales.index.values:
+            # Split in train and test set..
+            base_df = salescount_by_week.loc[ix].reset_index().rename(columns={"WEEK_END_DATE": "ds", "UNITS": "y"})
+            split_date = base_df.max()["ds"] - pd.Timedelta(4, unit='w')
+            train_set = base_df[base_df.ds <= split_date]
+            test_set = base_df[base_df.ds > split_date]
+
+            proph = Prophet()
+            proph.fit(train_set)
+            future = proph.make_future_dataframe(periods=4, freq="W")
+            forecast = proph.predict(future)
+            # proph.plot(forecast)
+            # proph.plot_components(forecast)
+            # plt.show()
+
+            # MSE
+            mse = np.mean(np.power(test_set.y - forecast.yhat.tail(4), 2))
+            print(mse)
 
         base_dfs = {
             upc: salescount_by_week.loc[upc].reset_index().rename(columns={"WEEK_END_DATE": "ds", "UNITS": "y"})
@@ -166,9 +166,9 @@ if __name__ == '__main__':
         else:
             ts_gridsearch_results = pd.read_pickle("ts_gridsearch_results.pkl")
 
-        # for upc in top5_prods_by_sales.index.values:
-        #     print(ts_gridsearch_results[ts_gridsearch_results.UPC == upc].sort_values("MSE", ascending=True).head(5))
-        #     print("-" * 32)
+        for upc in top5_prods_by_sales.index.values:
+            print(ts_gridsearch_results[ts_gridsearch_results.UPC == upc].sort_values("MSE", ascending=True).head(5))
+            print("-" * 32)
 
         # yes, hyperparameter settings do make a difference. it's not drastic, but noticeable.
 
