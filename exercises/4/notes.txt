@@ -1,0 +1,51 @@
+**1** \\ 
+ \\ 
+C1: A > B, B > C, C > E, E > H \\ 
+C2: A > B, B > D, D > E, E > H \\ 
+C3: A > B, B > D, D > F, F > I, I > H \\ 
+C4: A > B, B > D, D > F, F > I, I > H \\ 
+C5: A > B, B > C, C > G, G > H \\ 
+C6: A > B, B > C, C > E, E > H \\ 
+ \\ 
+**2** \\ 
+ 
+A \rightarrow_w B \\ 
+B \rightarrow_w C \\ 
+B \rightarrow_w D \\ 
+C \rightarrow_w E \\ 
+D \rightarrow_w E \\ 
+D \rightarrow_w F \\ 
+F \rightarrow_w I \\ 
+I \rightarrow_w H \\ 
+E \rightarrow_w H \\ 
+C \rightarrow_w G \\ 
+G \rightarrow_w H \\ 
+ 
+A \#_w C \\ 
+A \#_w D \\ 
+A \#_w E \\ 
+A \#_w F \\ 
+A \#_w I \\ 
+A \#_w H \\ 
+A \#_w G \\ 
+B \#_w E \\ 
+B \#_w H \\ 
+B \#_w I \\ 
+B \#_w F \\ 
+B \#_w G \\ 
+C \#_w D \\ 
+C \#_w F \\ 
+C \#_w I \\ 
+C \#_w H \\ 
+D \#_w I \\ 
+D \#_w H \\ 
+D \#_w G \\ 
+E \#_w F \\ 
+E \#_w I \\ 
+E \#_w G \\ 
+F \#_w G \\ 
+F \#_w H \\ 
+G \#_w I \\ 
+ 
+**3** \\ 
+ \\ 

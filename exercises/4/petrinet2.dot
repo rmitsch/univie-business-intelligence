@@ -1,0 +1,27 @@
+digraph G {
+	splines=spline;
+
+	node [shape=box];
+	A [label="A"];
+	B [label="B"];
+	C [label="C"];
+	D [label="D"];
+	E [label="E"];
+	F [label="F"];
+	G [label="G"];
+	H [label="H"];
+	I [label="I"];
+
+	A -> B [ label="0.857" ];
+	B -> C [ label="0.75" ];
+	B -> D [ label="0.75" ];
+	C -> E [ label="0.667" ];
+	C -> G [ label="0.5" ];
+	D -> E [ label="0.5" ];
+	D -> F [ label="0.667" ];
+	E -> H [ label="0.75" ];
+	F -> I [ label="0.67" ];
+	I -> H [ label="0.667" ];
+	G -> H [ label="0.5" ];
+}
+

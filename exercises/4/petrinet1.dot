@@ -1,0 +1,40 @@
+digraph G {
+	splines=spline;
+
+	node [shape=circle];
+	root [label=""];	
+	S1 [label=""];	
+	S2 [label=""];	
+	S3 [label=""];	
+	S4 [label=""];	
+	S5 [label=""];	
+	S6 [label=""];	
+	S7 [label=""];	
+	end [label=""];	
+
+	node [shape=box];
+	A [label="A"];
+	B [label="B"];
+	C [label="C"];
+	D [label="D"];
+	E [label="E"];
+	F [label="F"];
+	G [label="G"];
+	H [label="H"];
+	I [label="I"];
+
+	root -> A -> B -> S1;
+	S1 -> C;
+	S1 -> D;
+	C -> S2 -> G -> S7 -> H;
+	C -> S3;
+	D -> S3;
+	S3 -> E -> S4;
+	S4 -> F;
+	S4 -> H;
+	F -> S5 -> I;
+	I -> S6 -> H;
+	I -> end;
+	H -> end;
+}
+
